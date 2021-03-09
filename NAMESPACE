@@ -1,0 +1,2 @@
+import(stats)
+export(BER,CONGL,ESTRAT,M.MET,MAS,MCR,n.ESTMAS,n.MAS,n.MASC,PiPT,PPT,R.SIS,WHICH1)
