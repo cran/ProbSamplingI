@@ -80,8 +80,8 @@ M.MET<-function(F.UM,designs,list.arg,p,type="selec",parameter="total",yk=NULL,z
     if(contd<=4){
       if(designs[1]=="MAS"){sel1<-MAS(N=NI,n=nI);Rt.1<-data.frame(NI,nI)}
       if(designs[1]=="MCR"){sel1<-MCR(N=NI,m=nI);Rt.1<-data.frame(NI,mI=nI)}
-      if(designs[1]=="PPT"){xkI<-tapply(xk,F.UM$F.UPM,sum);sel1<-PPT(xk=xkI,m=nI);Rt.1<-sel1[2:3]}
-      if(designs[1]=="PiPT"){xkI<-tapply(xk,F.UM$F.UPM,sum);sel1<-PiPT(xk=xkI,n=nI);Rt.1<-sel1}
+      if(designs[1]=="PPT"){xkI<-as.numeric(tapply(xk,F.UM$F.UPM,sum));sel1<-PPT(xk=xkI,m=nI);Rt.1<-sel1[2:3]}
+      if(designs[1]=="PiPT"){xkI<-as.numeric(tapply(xk,F.UM$F.UPM,sum));sel1<-PiPT(xk=xkI,n=nI);Rt.1<-sel1}
       m<-UM[POS(UM$F.UPM,sel1$Ksel),]
       # Construction of the new UPM factor
       k<-1
@@ -145,8 +145,8 @@ M.MET<-function(F.UM,designs,list.arg,p,type="selec",parameter="total",yk=NULL,z
           if(designs[3]=="MAS"){sel3<-MAS(N=Niq[j],n=niq[j]);Rt.3[[j]]<-sel3}
           if(designs[3]=="MCR"){sel3<-MCR(N=Niq[j],m=niq[j]);Rt.3[[j]]<-sel3}
           if(designs[3]=="R.SIS" & contd==3){sel3<-R.SIS(N=Niq[j],n=niq[j],r=r);Rt.3[[j]]<-sel3;Rt.3r[[j]]<-sel3$fact}
-          if(designs[3]=="PPT"){xk3<-tapply(M3$xk,M3$F.UTM,sum);sel3<-PPT(xk=xk3,m=niq[j]);Rt.3[[j]]<-sel3[2:3]}
-          if(designs[3]=="PiPT"){xk3<-tapply(M3$xk,M3$F.UTM,sum);sel3<-PiPT(xk=xk3,n=niq[j]);Rt.3[[j]]<-sel3}
+          if(designs[3]=="PPT"){xk3<-as.numeric(tapply(M3$xk,M3$F.UTM,sum));sel3<-PPT(xk=xk3,m=niq[j]);Rt.3[[j]]<-sel3[2:3]}
+          if(designs[3]=="PiPT"){xk3<-as.numeric(tapply(M3$xk,M3$F.UTM,sum));sel3<-PiPT(xk=xk3,n=niq[j]);Rt.3[[j]]<-sel3}
           if(j==1){
             w<-1
             for(t in sel3$Ksel){

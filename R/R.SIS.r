@@ -84,7 +84,7 @@ R.SIS<-function(N,n,r,yk=NULL,zk=NULL,fact=NULL,dk=NULL,type="selec",parameter="
     names(Resul)<-c(parameter,"Vest","e.e","Cve","IC.inf","IC.sup","rho","Ivi","deef")
     }else{Resul<-data.frame(ty.e,Vest,e.e,Cve,IC.inf,IC.sup)
     names(Resul)<-c(parameter,"Vest","e.e","Cve","IC.inf","IC.sup")}
-    return(list(Resul=Resul))
+    return(list(Estimation=Resul))
   }
   if((type=="estm" & parameter!="total")| type=="estm.Ud"){
     if(type=="estm"){dk<-as.matrix(rep(1,length(yk)))}

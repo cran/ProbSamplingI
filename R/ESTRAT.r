@@ -1,5 +1,5 @@
 
-ESTRAT<-function(strata,designs,p,xk=NULL,yk=NULL,zk=NULL,dk=NULL,type="selec",Argt,parameter="total",rh=NULL,Ek=NULL,Nc=0.95){
+ESTRAT<-function(strata,designs,nh,xk=NULL,yk=NULL,zk=NULL,dk=NULL,type="selec",Argt,parameter="total",rh=NULL,Ek=NULL,Nc=0.95){
   H<-length(table(strata))
   # Validation of Arguments............................................................................................................
   V.designs<-function(designs){
@@ -20,7 +20,7 @@ ESTRAT<-function(strata,designs,p,xk=NULL,yk=NULL,zk=NULL,dk=NULL,type="selec",A
   if(missing(designs)){stop("Error, the vector designs is absent \n")}
   if(V.designs(designs)==FALSE){stop("Error, one of the designs is not valid\n")}
   if(type=="selec"){
-    if(missing(p)){stop("Error, the vector p is absent \n")}
+    if(missing(nh)){stop("Error, the vector nh is absent \n")}
     if(length(which(designs=="PiPT" | designs=="PPT"))!=0){if(missing(xk)){stop("Error, the vector xk is absent \n")}
       if(length(xk)!=length(strata)){stop("Error, vectors xk and strata are not equal in length \n")}}
   }
@@ -55,13 +55,12 @@ ESTRAT<-function(strata,designs,p,xk=NULL,yk=NULL,zk=NULL,dk=NULL,type="selec",A
     Nh<-as.vector(tapply(rep(1,length(strata)),strata,sum))
     INDh<-sequence(as.vector(Nh))
     datos<-data.frame(IND=1:length(strata),strata,INDh)
-    nh<-ceiling(p*Nh)
     Rt.h<-list()
     j<-1
     for(i in 1:H){
       if(designs[i]=="MAS"){selh<-MAS(N=Nh[i],n=nh[i],Ek=Ek[which(strata==i)]);Rt.h[[i]]<-data.frame(Nh=Nh[i],nh=nh[i])}
       if(designs[i]=="MCR"){selh<-MCR(N=Nh[i],m=nh[i],Ek=Ek[which(strata==i)]);Rt.h[[i]]<-data.frame(Nh=Nh[i],mh=nh[i])}
-      if(designs[i]=="BER"){selh<-BER(N=Nh[i],Pi=p[i],Ek=Ek[which(strata==i)]);Rt.h[[i]]<-data.frame(Pi=p[i])}
+      if(designs[i]=="BER"){selh<-BER(N=Nh[i],Pi=nh[i]/Nh[i],Ek=Ek[which(strata==i)]);Rt.h[[i]]<-data.frame(Pi=nh[i]/Nh[i])}
       if(designs[i]=="R.SIS"){selh<-R.SIS(N=Nh[i],n=nh[i],r=rh[i],Ek=Ek[which(strata==i)]);Rt.h[[i]]<-list(Nh=Nh[i],nh=nh[i],rh=rh[i],fact=selh$fact)}      #,fact=selh$fact)
       if(designs[i]=="PPT"){xkh<-xk[strata==i];selh<-PPT(xk=xkh,m=nh[i],Ek=Ek[which(strata==i)]);Rt.h[[i]]<-selh[2]}
       if(designs[i]=="PiPT"){xkh<-xk[strata==i];selh<-PiPT(xk=xkh,n=nh[i],Ek=Ek[which(strata==i)]);Rt.h[[i]]<-selh[2:3]}
@@ -97,10 +96,10 @@ ESTRAT<-function(strata,designs,p,xk=NULL,yk=NULL,zk=NULL,dk=NULL,type="selec",A
         if(parameter=="ratio" & type=="estm.Ud"){Resul.est[[i]]<-MAS(yk=yk[strata==i],zk=zk[strata==i],dk=dk[strata==i],N=Argt[[i]]$N,n=Argt[[i]]$n,type=type,parameter=parameter,Nc=Nc)$Estimation[,1:c]}
       }
       if(designs[i]=="R.SIS"){
-        if(parameter!="ratio" & type=="estm"){Resul.est[[i]]<-R.SIS(yk=yk[strata==i],n=Argt[[i]]$n,N=Argt[[i]]$N,r=Argt[[i]]$r,fact=Argt[[i]]$fact,type=type,parameter=parameter,Nc=Nc)$Estimation[,1:c]}
-        if(parameter!="ratio" & type=="estm.Ud"){Resul.est[[i]]<-R.SIS(yk=yk[strata==i],dk=dk[strata==i],n=Argt[[i]]$n,N=Argt[[i]]$N,r=Argt[[i]]$r,fact=Argt[[i]]$fact,type=type,parameter=parameter,Nc=Nc)$Estimation[,1:c]}
-        if(parameter=="ratio" & type=="estm"){Resul.est[[i]]<-R.SIS(yk=yk[strata==i],zk=zk[strata==i],n=Argt[[i]]$n,N=Argt[[i]]$N,r=Argt[[i]]$r,fact=Argt[[i]]$fact,type=type,parameter=parameter,Nc=Nc)$Estimation[,1:c]}
-        if(parameter=="ratio" & type=="estm.Ud"){Resul.est[[i]]<-R.SIS(yk=yk[strata==i],zk=zk[strata==i],dk=dk[strata==i],n=Argt[[i]]$n,N=Argt[[i]]$N,r=Argt[[i]]$r,fact=Argt[[i]]$fact,type=type,parameter=parameter,Nc=Nc)$Estimation[,1:c]}
+        if(parameter!="ratio" & type=="estm"){Resul.est[[i]]<-R.SIS(yk=yk[strata==i],n=Argt[[i]]$n,N=Argt[[i]]$N,r=Argt[[i]]$rh,fact=Argt[[i]]$fact,type=type,parameter=parameter,Nc=Nc)$Estimation[,1:c]}
+        if(parameter!="ratio" & type=="estm.Ud"){Resul.est[[i]]<-R.SIS(yk=yk[strata==i],dk=dk[strata==i],n=Argt[[i]]$n,N=Argt[[i]]$N,r=Argt[[i]]$rh,fact=Argt[[i]]$fact,type=type,parameter=parameter,Nc=Nc)$Estimation[,1:c]}
+        if(parameter=="ratio" & type=="estm"){Resul.est[[i]]<-R.SIS(yk=yk[strata==i],zk=zk[strata==i],n=Argt[[i]]$n,N=Argt[[i]]$N,r=Argt[[i]]$rh,fact=Argt[[i]]$fact,type=type,parameter=parameter,Nc=Nc)$Estimation[,1:c]}
+        if(parameter=="ratio" & type=="estm.Ud"){Resul.est[[i]]<-R.SIS(yk=yk[strata==i],zk=zk[strata==i],dk=dk[strata==i],n=Argt[[i]]$n,N=Argt[[i]]$N,r=Argt[[i]]$rh,fact=Argt[[i]]$fact,type=type,parameter=parameter,Nc=Nc)$Estimation[,1:c]}
       }
       if(designs[i]=="PPT"){
         if(parameter!="ratio" & type=="estm"){Resul.est[[i]]<-PPT(yk=yk[strata==i],pk=Argt[[i]]$pk,type=type,parameter=parameter,Nc=Nc)$Estimation[,1:c]}

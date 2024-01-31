@@ -7,16 +7,16 @@
 The ESTRAT function selects a random sample or estimates an interest parameter under a stratified sampling.
 }
 \usage{
-ESTRAT(strata,designs,p,xk=NULL,yk=NULL,zk=NULL,dk=NULL,type="selec",
+ESTRAT(strata,designs,nh,xk=NULL,yk=NULL,zk=NULL,dk=NULL,type="selec",
        Argt,parameter="total",rh=NULL,Ek=NULL,Nc=0.95)
-# To select: ESTRAT(strata,p,designs,xk,rh)
+# To select: ESTRAT(strata,nh,designs,xk,rh)
 # To estimate: ESTRAT(yk,zk,strata,designs,type="estm",Argt,parameter)
 # To estimate in domains: ESTRAT(yk,zk,dk,strata,designs,type="estm",Argt,parameter)
 }
 
 \arguments{
 \item{strata}{Vector indicating which stratum each individual belongs to.}
-\item{p}{Vector indicating the proportion of individuals to be selected in each stratum. This argument is necessary if the type argument is equal to "select".}
+\item{nh}{Vector that indicates the number of individuals to select in each stratum. This argument is required if the type argument is equal to "select".}
 \item{yk}{Vector of observations of the characteristic of interest. This vector is only necessary if you want to estimate.}
 \item{zk}{Vector of observations of the characteristic of interest of equal length that yk. This vector is necessary if the parameter of interest is the ratio and refers to the variable involved in the denominator of the ratio.}
 \item{xk}{Vector of observations of the auxiliary variable. This vector is only necessary if it is desired to select in any stratum by means of a probability selection or inclusion probability proportional to size design.}
@@ -56,9 +56,9 @@ Sex<-rep(1:2,length=1000)
 dk<-factor(Sex,labels=c("Man","Woman"))
 
 
-p<-c(0.3,0.2,0.2,0.3,0.4)
+nh<-c(60,40,40,60,80)
 designs<-c("MAS","MAS","MAS","MAS","MAS")
-select<-ESTRAT(strata=strata,designs=designs,p=p)
+select<-ESTRAT(strata=strata,designs=designs,nh=nh)
 Argt<-select$Rtdos.h
 Strata<-strata[select$Sample$IND]
 yksel<-yk[select$Sample$IND]
@@ -72,10 +72,10 @@ ESTRAT(yk=yk.psel,strata=Strata,designs=designs,Argt=Argt,
       type="estm",parameter="prop")
 ESTRAT(yk=yksel,zk=zksel,strata=Strata,designs=designs,Argt=Argt,
        type="estm",parameter="ratio")
-p<-c(0.2,0.1,0.5,0.3,0.4)
+
 
 designs<-c("PiPT","PPT","MAS","MCR","BER")
-select<-ESTRAT(xk=xk,strata=strata,designs=designs,p=p)
+select<-ESTRAT(xk=xk,strata=strata,designs=designs,nh)
 Argt<-select$Rtdos.h
 Strata<-strata[select$Sample$IND]
 yksel<-yk[select$Sample$IND]
@@ -93,7 +93,7 @@ ESTRAT(yk=yksel,zk=zksel,strata=Strata,designs=designs,Argt=Argt,
 # Estimates in Domains
 
 designs<-c("MAS","MAS","MAS","MAS","MAS")
-select<-ESTRAT(strata=strata,designs=designs,p=p)
+select<-ESTRAT(strata=strata,designs=designs,nh=nh)
 Argt<-select$Rtdos.h
 Strata<-strata[select$Sample$IND]
 yksel<-yk[select$Sample$IND]

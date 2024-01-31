@@ -33,8 +33,8 @@ PiPT<-function(xk,n,yk=NULL,zk=NULL,pik=NULL,mpikl=NULL,dk=NULL,type="selec",par
 
   if(type=="selec"){
     if(missing(Ek)){Ek<-runif(length(xk))}
+    N<-length(xk)
     if(n==2){
-      N<-length(xk)
       xk1<-xk
       tx<-sum(xk)
       Ksel<-numeric()
@@ -64,87 +64,86 @@ PiPT<-function(xk,n,yk=NULL,zk=NULL,pik=NULL,mpikl=NULL,dk=NULL,type="selec",par
     }
 
     if(n>2 & n<length(xk)){
-      N<-length(xk)
-      xkord<-sort.int(xk,decreasing=T,index.return=TRUE) ### Ordenamiento Decreciente
+      Tx<-sum(xk)
+      k<-1:N
+      xkord<-sort.int(xk,decreasing=T,index.return=TRUE)
       Ind<-xkord$ix
-      tk<-numeric(0)
-      tk[1]<-sum(xkord$x)
-      for (i in 2:N ){
-        tk[i]<-sum(xkord$x[-c(1:i-1)])
-      }
-      Ck<-(n*xkord$x)/tk
-      Ek<-Ek[Ind]
-      k1<-which(Ck<1)
-      k2<-which(Ck>=1)
-      Ek1<-Ek[k1]
-      Ek2<-Ek[k2]
+      Dat_ord<-data.frame(k,xk)[Ind,]
+      xkord<-Dat_ord$xk
+      tk<-numeric()
+      tk[1]<-sum(xkord)
+      for (i in 2:N ){tk[i]<-sum(xkord[-c(1:i-1)])}
+      Ck<-(n*xkord)/tk
+      Dat_ord<-cbind(Dat_ord,tk,Ck)
+      U1<-Dat_ord[which(Ck<1),]
+      U2<-Dat_ord[which(Ck>=1),]
+      #-------para ck<1--------------------
       nk<-0
-      muestra1<-numeric()
-      for(i in k1){
-        if((((n-nk)*xkord$x[i])/tk[i])>Ek1[i] & nk<n ){
-          muestra1[i]<-1
-          nk<-nk+1
-        }else{
-          muestra1[i]<-0
-          nk<-nk+0
-        }
+      Ek1<-Ek[1:nrow(U1)]
+      xk<-U1$xk
+      tk<-U1$tk
+      Ik<-numeric()
+      Fk<-numeric()
+      for(i in 1:nrow(U1)){
+        Fk[i]<-((n-nk)*xk[i])/tk[i]
+        if(Ek1[i]<Fk[i]){Ik[i]<-1}else{Ik[i]<-0}
+        nk<-nk+Ik[i]
       }
+      k_sel1<-U1$k[Ik==1]
+      ksel<-sort(k_sel1)
+      n1<-nk
       ##Selection for ck>=Ko (Fann Muller)
-      nj<-length(which(muestra1!=0))
-      j<-k2[1]
-      muestra2<-numeric()
-      for(i in 1:length(k2)){
-        if(((n-nj)/(N-j+1))>Ek2[i] & nj<n){
-          muestra2[i]<-1
-          nj<-nj+1
-          j=j+1
-        }else{
-          muestra2[i]<-0
-          nj<-nj+0
-          j=j+1
-        }
+      if(n1<n){
+        N2<-nrow(U2)
+        n2<-n-nk
+        Ek2<-Ek[(nrow(U1)+1):nrow(Dat_ord)]
+        sel2<-MAS(N=N2,n=n2,Ek=Ek2,method="fmuller")
+        k_sel2<-U2$k[sel2$Ksel]
+        ksel<-sort(c(k_sel1,k_sel2))
       }
-      Ikord<-c(muestra1,muestra2)
-      ksel<-which(Ikord==1)
-      Ksel<-sort(Ind[ksel])
-      Ik<-rep(0,N);Ik[Ksel]<-1
-      Ik
       #####...................... ...los pik.................................................................................... ........
-      pik1<-(n*xkord$x[k1])/sum(xk)
-      pik2<-rep((n*mean(xkord$x[k2]))/sum(xk),length(k2))
-      pik<-c(pik1,pik2)
-      piksel<-pik[ksel]
-      ###.........................pikl (k<l).............................................................................................
-      ko<-k2[1]
-      pikl<-function(k,l){
-        Tx<-sum(xk)
-        gk<-numeric(0)
-        gk[1]<-1/tk[2]
-        for(i in 2:(N-1)){gk[i]<-gk[i-1]*((tk[i]-xkord$x[i-1])/tk[i+1])}
-        if(1<=k & k<l & l<ko){pikl<-((n*(n-1))/Tx)*gk[k]*xkord$x[k]*xkord$x[l]}
-        if(1<=k & k<ko & ko<=l & l<=N){pikl<-((n*(n-1))/Tx)*gk[k]*xkord$x[k]*mean(xkord$x[ko:N])}
-        if(ko<=k & k<l & l<=N){
-          pikl<-((n*(n-1))/Tx)*gk[ko-1]*((tk[ko]-xkord$x[ko-1])/(tk[ko]-mean(xkord$x[ko:N])))*(mean(xkord$x[ko:N])^2)
-        }
-        if(k>l | k==l){pikl<-NA}
-        return(pikl)
-      }
-      ##.................................pikl...............................................................................................
-      Pikl<-function(k,l){
-        if(k==l){Pikl<-pik[k]}
-        if(k<l){Pikl<-pikl(k,l)}
-        if(k>l){Pikl<-pikl(l,k)}
-        return(Pikl)
-      }
-      ### Matrix of second-order inclusion probabilities.
-      mpikl.s<-matrix(0,ncol=n,nrow=n,dimnames=list(paste("K",Ksel,sep="="),paste("L",Ksel,sep="=")))
+      pik<-numeric()
       for(i in 1:n){
-        for(j in 1:n){
-          mpikl.s[i,j]<-Pikl(ksel[i],ksel[j])
+        if(sum(ksel[i]==U1$k)==1){pik[i]<-n*(U1$xk[which(ksel[i]==U1$k)]/Tx)}else{
+          pik[i]<-n*(mean(U2$xk)/Tx)
         }
       }
-      mpikl.s
-      return(list(Ksel=Ksel,piksel=piksel,mpikl.s=mpikl.s))
+      PIK<-data.frame(ksel,pik)
+      ###.........................pikl (k<l).............................................................................................
+      tk<-Dat_ord$tk
+      gk<-numeric()
+      gk[1]<-1/tk[2]
+      for(i in 2:(N-1)){gk[i]<-gk[i-1]*(tk[i]-xkord[i-1])/tk[i+1]}
+      F.in<-function(k,U){ifelse(sum(k==U)==1,TRUE,FALSE)}
+      m.pikl<-matrix(0,ncol=n,nrow=n,dimnames=list(paste("k",ksel,sep="="),paste("l",ksel,sep="=")))
+      for(i in 1:n){
+        for(j in i:n){
+          if(i==j){m.pikl[i,j]<-pik[i]}else{
+            if(F.in(ksel[i],U1$k) & F.in(ksel[j],U1$k)){
+              kp<-which(Dat_ord$k==ksel[i])
+              lp<-which(Dat_ord$k==ksel[j])
+              m.pikl[i,j]<-n*(n-1)*gk[kp]*xkord[kp]*xkord[lp]/Tx
+              m.pikl[j,i]<-m.pikl[i,j]
+            }
+            if(F.in(ksel[i],U1$k) & F.in(ksel[j],U2$k) ){
+              kp<-which(Dat_ord$k==ksel[i])
+              lp<-which(Dat_ord$k==ksel[j])
+              m.pikl[i,j]<-n*(n-1)*gk[kp]*xkord[kp]*mean(U2$xk)/Tx
+              m.pikl[j,i]<-m.pikl[i,j]
+            }
+            if(F.in(ksel[i],U2$k) & F.in(ksel[j],U2$k) ){
+              kp<-which(Dat_ord$k==ksel[i])
+              lp<-which(Dat_ord$k==ksel[j])
+              ka<-nrow(U1)+1
+              m.pikl[i,j]<-(n*(n-1)*gk[kp-1]/Tx)*((tk[ka]-xkord[ka-1])/(tk[ka]-mean(U2$xk)))*(mean(U2$xk)^2)
+              m.pikl[j,i]<-m.pikl[i,j]
+            }
+
+          }
+        }
+      }
+      m.pikl
+      return(list(Ksel=ksel,piksel=pik,mpikl.s=m.pikl))
     }
   }
   #.....................................Estimation..........................................................
